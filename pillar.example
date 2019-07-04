@@ -4,7 +4,29 @@ gitolite:
   repository_url: https://github.com/sitaramc/gitolite.git
   revision: v3.6.1
   ssh_pubkey: ssh-rsa here_goes_your_public_ssh_key== admin@example.com # default admin key if user's ssh_pubkey is not defined
+  ssh_pubkey_source': salt://ssh_keys  # default SSH pubkey source
+  # In some setups SSH is not available on localhost
+  admin_host: localhost
+  #admin_host: my.host.test
   users:
     - username: git
+      # from the docs:
+      #   default umask gives you perms of '0700'; see the rc file docs for
+      #   how/why you might change this
+      # If you change this, you'll need to manually adjust the permissions of already present files.
+      # This MUST be set as a string in order to preserve the leading zeros.
+      umask: '0077'
+      # Add these users to the $username group (in this example: git)
+      group_add: []
+      # group_add:
+      #   - www-data
       ssh_pubkey: ssh-rsa here_goes_your_public_ssh_key== git@example.com
       shell: /bin/zsh
+      managed: True  # Manage via Salt; Include gitolite.managed!
+      gitolite_conf_source: salt://gitolite/files/my_gitolite.conf.jinja
+      ssh_pubkey_source: salt://ssh_keys  # May be ommitted
+      ssh_pubkeys:
+        - alice
+        - bob
+      # Set GIT_CONFIG_KEYS to enable 'config key=value' in the repo config file
+      git_config_keys: '.*'
